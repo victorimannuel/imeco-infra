@@ -145,7 +145,8 @@ services/nginx/ssl/*
 # Ignore files inside those subdirectories
 services/nginx/ssl/*/*
 
-# Keep .gitkeep files anywhere inside ssl
+# Keep .gitkeep and .example files anywhere inside ssl
+!services/nginx/ssl/**/*.example
 !services/nginx/ssl/**/.gitkeep
 !services/nginx/ssl/.gitkeep
 
