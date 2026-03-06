@@ -136,11 +136,18 @@ _modules/*
 data/
 
 
-# Ignore all files in uploads
+# Ignore files in ssl root
 services/nginx/ssl/*
 
-# Tapi keep folder agar tetap ada di repo
-!/services/nginx/ssl/.gitkeep
+# Un-ignore subdirectories so git looks inside them
+!services/nginx/ssl/*/
+
+# Ignore files inside those subdirectories
+services/nginx/ssl/*/*
+
+# Keep .gitkeep files anywhere inside ssl
+!services/nginx/ssl/**/.gitkeep
+!services/nginx/ssl/.gitkeep
 
 # rclone-related
 *rclone.conf
