@@ -153,3 +153,5 @@ services/nginx/ssl/*/*
 # rclone-related
 *rclone.conf
 *googleusercontent.com.json
+
+services/archive/*
