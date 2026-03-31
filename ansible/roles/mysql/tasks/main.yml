@@ -1,0 +1,23 @@
+---
+# ansible/roles/mysql/tasks/main.yml
+- name: Ensure MySQL data directory exists
+  ansible.builtin.file:
+    path: "{{ deploy_dir }}/data/mysql"
+    state: directory
+    mode: '0755'
+
+- name: Create MySQL services directory if somehow missing
+  ansible.builtin.file:
+    path: "{{ deploy_dir }}/services/mysql"
+    state: directory
+
+- name: Template docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ deploy_dir }}/services/mysql/docker-compose.yml"
+    mode: '0644'
+
+- name: Start MySQL container
+  community.docker.docker_compose_v2:
+    project_src: "{{ deploy_dir }}/services/mysql"
+    state: present

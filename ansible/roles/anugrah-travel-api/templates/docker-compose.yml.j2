@@ -1,0 +1,14 @@
+networks:
+  appnet:
+    external: true
+
+services:
+  go-app:
+    build: 
+      context: "{{ deploy_dir }}/apps/anugrah-travel-api"
+    container_name: anugrah-travel-api
+    ports:
+      - "8088:8080"
+    restart: unless-stopped
+    networks:
+      - appnet

@@ -1,6 +1,0 @@
-include:
-  - nginx/docker-compose.yml
-  - mysql/docker-compose.yml
-  - phpmyadmin/docker-compose.yml
-  # - netdata/docker-compose.prod.yml
-  - backup-guy/docker-compose.yml

@@ -1,9 +1,9 @@
 [submodule "apps/anugrah-travel-api"]
 	path = apps/anugrah-travel-api
-	url = https://github.com/victorimannuel/anugrah-travel-api.git
+	url = git@github.com:victorimannuel/anugrah-travel-api.git
 [submodule "apps/radar-mandiri-sukses"]
 	path = apps/radar-mandiri-sukses
-	url = https://github.com/victorimannuel/radar-mandiri-sukses.git
+	url = git@github.com:victorimannuel/radar-mandiri-sukses.git
 [submodule "apps/globalindo-simetrika"]
 	path = apps/globalindo-simetrika
 	url = git@github.com:victorimannuel/globalindo-simetrika-website.git

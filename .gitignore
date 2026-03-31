@@ -150,8 +150,13 @@ services/nginx/ssl/*/*
 !services/nginx/ssl/**/.gitkeep
 !services/nginx/ssl/.gitkeep
 
+# Security: Password and certificate files
+**/.vault_pass
+**/*.vault_pass
+**/*.key
+**/*.crt
+
 # rclone-related
 *rclone.conf
 *googleusercontent.com.json
 
-services/archive/*

@@ -1,0 +1,111 @@
+---
+# ansible/roles/common/tasks/main.yml
+
+- name: Update APT cache
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  become: true
+
+- name: Install base dependencies
+  ansible.builtin.apt:
+    name:
+      - git
+      - curl
+      - wget
+      - unzip
+      - build-essential
+      - python3-pip
+      - python3-venv
+    state: present
+  become: true
+
+# Root is needed to create /opt/..., but we immediately hand ownership to
+# the deploy user so all subsequent file/template/git tasks run without sudo.
+- name: Create deployment directory (owned by deploy)
+  ansible.builtin.file:
+    path: "{{ deploy_dir }}"
+    state: directory
+    owner: deploy
+    group: deploy
+    mode: '0755'
+    recurse: yes
+  become: true
+
+# Mark directory as safe for the deploy user (Git 2.35.2+ security)
+- name: Mark deployment directory as safe for Git
+  ansible.builtin.git_config:
+    name: safe.directory
+    scope: global
+    value: "{{ deploy_dir }}"
+    state: present
+
+# Configure Git to use Personal Access Token for GitHub (using git_config module for security)
+- name: Configure Git to use insteadOf for PAT (HTTPS)
+  ansible.builtin.git_config:
+    name: "url.https://{{ github_token }}@github.com/.insteadOf"
+    scope: global
+    value: "https://github.com/"
+    state: present
+
+- name: Configure Git to use insteadOf for PAT (SSH)
+  ansible.builtin.git_config:
+    name: "url.https://{{ github_token }}@github.com/.insteadOf"
+    scope: global
+    value: "git@github.com:"
+    state: present
+
+# deploy owns deploy_dir, so no root needed here.
+- name: Clone imeco-infra repository
+  ansible.builtin.git:
+    repo: 'https://github.com/victorimannuel/imeco-infra.git'
+    dest: "{{ deploy_dir }}"
+    version: main
+    recursive: yes
+    force: yes
+
+# ---------- Swap (system-level, root required) ----------
+
+- name: Check if swap file exists
+  ansible.builtin.stat:
+    path: /swapfile
+  register: swap_file_check
+
+- name: Create swap file (2GB)
+  ansible.builtin.command: dd if=/dev/zero of=/swapfile bs=1M count=2048
+  when: not swap_file_check.stat.exists
+  register: swap_created
+  become: true
+
+- name: Set swap file permissions
+  ansible.builtin.file:
+    path: /swapfile
+    mode: '0600'
+  when: swap_created is defined and swap_created.changed
+  become: true
+
+- name: Setup swap area
+  ansible.builtin.command: mkswap /swapfile
+  when: swap_created is defined and swap_created.changed
+  become: true
+
+- name: Enable swap file
+  ansible.builtin.command: swapon /swapfile
+  when: swap_created is defined and swap_created.changed
+  become: true
+
+- name: Add swap to fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '^/swapfile'
+    line: '/swapfile none swap sw 0 0'
+    state: present
+  become: true
+
+- name: Set swappiness to 10
+  ansible.builtin.sysctl:
+    name: vm.swappiness
+    value: '10'
+    state: present
+    reload: yes
+  become: true

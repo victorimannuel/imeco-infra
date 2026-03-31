@@ -1,0 +1,41 @@
+---
+# ansible/playbooks/site.yml
+- name: Deploy ImeCo Server Infrastructure
+  hosts: webservers
+  vars_files:
+    - ../inventories/group_vars/all/vars.yml
+    - ../inventories/group_vars/all/vault.yml
+
+  roles:
+    - role: common
+      tags: ['common', 'basic']
+      
+    - role: security
+      tags: ['security', 'ufw', 'fail2ban']
+
+    - role: docker
+      tags: ['docker', 'engine']
+      
+    - role: network
+      tags: ['docker', 'network']
+
+    - role: mysql
+      tags: ['services', 'db', 'mysql']
+
+    - role: nginx
+      tags: ['services', 'proxy', 'nginx']
+
+    - role: phpmyadmin
+      tags: ['services', 'pma']
+
+    - role: backup
+      tags: ['services', 'backup', 'rclone']
+
+    - role: radar-mandiri-sukses-website
+      tags: ['apps', 'rms', 'php']
+
+    - role: anugrah-travel-api
+      tags: ['apps', 'travel', 'api', 'go']
+
+    - role: globalindo-simetrika-website
+      tags: ['apps', 'globalindo', 'static']

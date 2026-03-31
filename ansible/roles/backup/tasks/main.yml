@@ -1,0 +1,24 @@
+---
+# ansible/roles/backup/tasks/main.yml
+- name: Ensure backup data directory exists
+  ansible.builtin.file:
+    path: "{{ deploy_dir }}/data/backup"
+    state: directory
+    mode: '0755'
+
+- name: Create backup services directory if missing
+  ansible.builtin.file:
+    path: "{{ deploy_dir }}/services/backup-guy"
+    state: directory
+    mode: '0755'
+
+- name: Template docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ deploy_dir }}/services/backup-guy/docker-compose.yml"
+    mode: '0644'
+
+- name: Start backup containers
+  community.docker.docker_compose_v2:
+    project_src: "{{ deploy_dir }}/services/backup-guy"
+    state: present

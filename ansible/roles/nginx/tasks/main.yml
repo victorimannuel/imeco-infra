@@ -1,0 +1,69 @@
+---
+# ansible/roles/nginx/tasks/main.yml
+- name: Ensure nginx services directory exists
+  ansible.builtin.file:
+    path: "{{ deploy_dir }}/services/nginx"
+    state: directory
+    mode: '0755'
+
+- name: Ensure ssl directories exist for domains
+  ansible.builtin.file:
+    path: "{{ deploy_dir }}/services/nginx/ssl/{{ item }}"
+    state: directory
+    mode: '0700'
+  loop:
+    - globalindosimetrika.co.id
+    - api.anugrahtravel.com
+
+- name: Write SSL certificates from local files (Globalindo)
+  ansible.builtin.copy:
+    src: "{{ local_ssl_path }}/globalindosimetrika.co.id/origin.crt"
+    dest: "{{ deploy_dir }}/services/nginx/ssl/globalindosimetrika.co.id/origin.crt"
+    mode: '0644'
+  notify: Restart Nginx
+
+- name: Write SSL private keys from local files (Globalindo)
+  ansible.builtin.copy:
+    src: "{{ local_ssl_path }}/globalindosimetrika.co.id/origin.key"
+    dest: "{{ deploy_dir }}/services/nginx/ssl/globalindosimetrika.co.id/origin.key"
+    mode: '0600'
+  notify: Restart Nginx
+
+- name: Write SSL certificates from local files (API AT)
+  ansible.builtin.copy:
+    src: "{{ local_ssl_path }}/api.anugrahtravel.com/origin.crt"
+    dest: "{{ deploy_dir }}/services/nginx/ssl/api.anugrahtravel.com/origin.crt"
+    mode: '0644'
+  notify: Restart Nginx
+
+- name: Write SSL private keys from local files (API AT)
+  ansible.builtin.copy:
+    src: "{{ local_ssl_path }}/api.anugrahtravel.com/origin.key"
+    dest: "{{ deploy_dir }}/services/nginx/ssl/api.anugrahtravel.com/origin.key"
+    mode: '0600'
+  notify: Restart Nginx
+
+- name: Write root SSL certificates from local files (RMS)
+  ansible.builtin.copy:
+    src: "{{ local_ssl_path }}/radar-ms.com/origin.crt"
+    dest: "{{ deploy_dir }}/services/nginx/ssl/origin.crt"
+    mode: '0644'
+  notify: Restart Nginx
+
+- name: Write root SSL private keys from local files (RMS)
+  ansible.builtin.copy:
+    src: "{{ local_ssl_path }}/radar-ms.com/origin.key"
+    dest: "{{ deploy_dir }}/services/nginx/ssl/origin.key"
+    mode: '0600'
+  notify: Restart Nginx
+
+- name: Template docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ deploy_dir }}/services/nginx/docker-compose.yml"
+    mode: '0644'
+
+- name: Start nginx container
+  community.docker.docker_compose_v2:
+    project_src: "{{ deploy_dir }}/services/nginx"
+    state: present

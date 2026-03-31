@@ -1,0 +1,37 @@
+networks:
+  appnet:
+    external: true
+
+services:
+  mysql-cron-backup:
+    container_name: mysql-cron-backup
+    image: fradelg/mysql-cron-backup
+    volumes:
+      - "{{ deploy_dir }}/data/backup:/backup"
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=root
+      - "MYSQL_PASS={{ vault_mysql_root_password }}"
+      - "MYSQL_DB={{ vault_mysql_database }}"
+      - MAX_BACKUPS=9
+      - INIT_BACKUP=1
+      - "CRON_TIME=0 0 * * *"
+    restart: unless-stopped
+    networks:
+      - appnet
+  
+  rclone-cron:
+    container_name: rclone-cron
+    image: olivierdalang/rclone-cron:latest
+    volumes:
+      - "{{ deploy_dir }}/data/backup/:/backup"
+      - "{{ deploy_dir }}/apps/radar-mandiri-sukses/public/uploads:/uploads:ro"
+    environment:
+      CRON_SCHEDULE: "0 0 * * *"
+      COMMAND: "rclone copy /backup GOOGLEDRIVE_OPS:Backup/RMS/Database && tar -czf /uploads_$$(date +'%Y-%m-%d-%H%M').tar.gz /uploads && rclone copy /uploads_$$(date +'%Y-%m-%d-%H%M').tar.gz GOOGLEDRIVE_OPS:Backup/RMS/Attachment && rm /uploads_*.tar.gz"
+      RCLONE_CONFIG_GOOGLEDRIVE_OPS_TYPE: "{{ vault_rclone_type }}"
+      RCLONE_CONFIG_GOOGLEDRIVE_OPS_CLIENT_ID: "{{ vault_rclone_client_id }}"
+      RCLONE_CONFIG_GOOGLEDRIVE_OPS_CLIENT_SECRET: "{{ vault_rclone_client_secret }}"
+      RCLONE_CONFIG_GOOGLEDRIVE_OPS_TOKEN: '{{ vault_rclone_token | string }}'
+    networks:
+      - appnet

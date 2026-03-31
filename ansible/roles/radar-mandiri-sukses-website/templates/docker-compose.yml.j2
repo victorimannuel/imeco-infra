@@ -1,0 +1,20 @@
+networks:
+  appnet:
+    external: true
+
+services:
+  php-rms:
+    container_name: php-ci4-rms
+    build:
+      context: "{{ deploy_dir }}/apps/radar-mandiri-sukses"
+      args:
+        APP_ENV: prod
+    volumes:
+      - .env:/var/www/rms/.env:ro
+      - ./writable:/var/www/rms/writable:rw
+    restart: always
+    networks:
+      - appnet
+    environment:
+      # Use .env file for environment settings (CI_ENVIRONMENT)
+      - APP_NAME=RMS

@@ -1,0 +1,24 @@
+networks:
+  appnet:
+    external: true
+
+services:
+  nginx:
+    image: nginx:1.29.4-alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "{{ deploy_dir }}/services/nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
+      - "{{ deploy_dir }}/services/nginx/sites:/etc/nginx/conf.d:ro"
+      # RMS Application
+      - "{{ deploy_dir }}/apps/radar-mandiri-sukses/public:/var/www/rms/public:ro"
+      # GS Website
+      - "{{ deploy_dir }}/apps/globalindo-simetrika:/var/www/gs/public:ro"
+      # SSL Certificates
+      - "{{ deploy_dir }}/services/nginx/ssl:/etc/nginx/ssl:ro"
+    mem_limit: 64m
+    restart: always
+    networks:
+      - appnet

@@ -1,0 +1,6 @@
+---
+# ansible/roles/network/tasks/main.yml
+- name: Ensure docker network appnet exists
+  community.docker.docker_network:
+    name: appnet
+    state: present

@@ -1,0 +1,21 @@
+---
+# ansible/playbooks/deploy-apps.yml
+- name: Redeploy Applications Only
+  hosts: webservers
+  vars_files:
+    - ../inventories/group_vars/all/vars.yml
+    - ../inventories/group_vars/all/vault.yml
+    
+  # We assume infra is running, so we only run the common role to get git pull and app roles
+  roles:
+    - role: common
+      tags: ['code']
+      
+    - role: radar-mandiri-sukses-website
+      tags: ['rms']
+
+    - role: anugrah-travel-api
+      tags: ['travel']
+
+    - role: globalindo-simetrika-website
+      tags: ['globalindo']
