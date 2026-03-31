@@ -15,6 +15,41 @@
     - globalindosimetrika.co.id
     - api.anugrahtravel.com
 
+- name: Check if nginx.conf is a directory
+  ansible.builtin.stat:
+    path: "{{ deploy_dir }}/services/nginx/nginx.conf"
+  register: nginx_conf_stat
+
+- name: Remove nginx.conf if it is a directory
+  ansible.builtin.file:
+    path: "{{ deploy_dir }}/services/nginx/nginx.conf"
+    state: absent
+  when: nginx_conf_stat.stat.exists and nginx_conf_stat.stat.isdir
+
+- name: Template nginx.conf
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: "{{ deploy_dir }}/services/nginx/nginx.conf"
+    mode: '0644'
+  notify: Restart Nginx
+
+- name: Ensure sites directory exists
+  ansible.builtin.file:
+    path: "{{ deploy_dir }}/services/nginx/sites"
+    state: directory
+    mode: '0755'
+
+- name: Template site configurations
+  ansible.builtin.template:
+    src: "sites/{{ item }}.conf.j2"
+    dest: "{{ deploy_dir }}/services/nginx/sites/{{ item }}.conf"
+    mode: '0644'
+  loop:
+    - globalindosimetrika.co.id
+    - api.anugrahtravel.com
+    - radar-ms.com
+  notify: Restart Nginx
+
 - name: Write SSL certificates from local files (Globalindo)
   ansible.builtin.copy:
     src: "{{ local_ssl_path }}/globalindosimetrika.co.id/origin.crt"
