@@ -28,10 +28,10 @@ jobs:
           ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
         run: |
           if [ -n "${ANSIBLE_VAULT_PASSWORD}" ]; then
-            printf '%s' "${ANSIBLE_VAULT_PASSWORD}" > /tmp/.vault_pass
-            chmod 600 /tmp/.vault_pass
-            ansible-playbook -i ansible/inventories/production.yml ansible/playbooks/setup.yml --syntax-check --vault-password-file /tmp/.vault_pass
-            ansible-playbook -i ansible/inventories/production.yml ansible/playbooks/deploy-apps.yml --syntax-check --vault-password-file /tmp/.vault_pass
+            printf '%s' "${ANSIBLE_VAULT_PASSWORD}" > ansible/.vault_pass
+            chmod 600 ansible/.vault_pass
+            ansible-playbook -i ansible/inventories/production.yml ansible/playbooks/setup.yml --syntax-check --vault-password-file ansible/.vault_pass
+            ansible-playbook -i ansible/inventories/production.yml ansible/playbooks/deploy-apps.yml --syntax-check --vault-password-file ansible/.vault_pass
           else
             echo "Skipping ansible-playbook syntax-check (ANSIBLE_VAULT_PASSWORD not available in this run)."
           fi

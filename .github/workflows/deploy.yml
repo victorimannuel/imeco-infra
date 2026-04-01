@@ -135,8 +135,8 @@ jobs:
         shell: bash
         run: |
           test -n "${{ secrets.ANSIBLE_VAULT_PASSWORD }}"
-          printf '%s' "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > /tmp/.vault_pass
-          chmod 600 /tmp/.vault_pass
+          printf '%s' "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > ansible/.vault_pass
+          chmod 600 ansible/.vault_pass
 
       - name: Deploy infra roles
         if: needs.detect-changes.outputs.infra == 'true'
@@ -147,7 +147,7 @@ jobs:
           ansible-playbook \
             -i ansible/inventories/production.yml \
             ansible/playbooks/setup.yml \
-            --vault-password-file /tmp/.vault_pass \
+            --vault-password-file ansible/.vault_pass \
             --tags common,security,docker,network,mysql,nginx,phpmyadmin,backup
 
       - name: Deploy application roles
@@ -172,5 +172,5 @@ jobs:
           ansible-playbook \
             -i ansible/inventories/production.yml \
             ansible/playbooks/deploy-apps.yml \
-            --vault-password-file /tmp/.vault_pass \
+            --vault-password-file ansible/.vault_pass \
             --tags "$tags_csv"

@@ -47,27 +47,35 @@
   become: true
 
 # Mark directory as safe for the deploy user (Git 2.35.2+ security)
-- name: Mark deployment directory as safe for Git
-  ansible.builtin.git_config:
-    name: safe.directory
-    scope: global
-    value: "{{ deploy_dir }}"
-    state: present
+- name: Read safe Git directories
+  ansible.builtin.command:
+    cmd: git config --global --get-all safe.directory
+  register: git_safe_dirs
+  changed_when: false
+  failed_when: false
 
-# Configure Git to use Personal Access Token for GitHub (using git_config module for security)
+- name: Mark deployment directory as safe for Git
+  ansible.builtin.command:
+    cmd: git config --global --add safe.directory "{{ deploy_dir }}"
+  when: deploy_dir not in (git_safe_dirs.stdout_lines | default([]))
+
+# Configure Git to use Personal Access Token for GitHub
+- name: Read GitHub insteadOf PAT rules
+  ansible.builtin.command:
+    cmd: git config --global --get-all "url.https://{{ github_token }}@github.com/.insteadOf"
+  register: git_pat_insteadof_rules
+  changed_when: false
+  failed_when: false
+
 - name: Configure Git to use insteadOf for PAT (HTTPS)
-  ansible.builtin.git_config:
-    name: "url.https://{{ github_token }}@github.com/.insteadOf"
-    scope: global
-    value: "https://github.com/"
-    state: present
+  ansible.builtin.command:
+    cmd: git config --global --add "url.https://{{ github_token }}@github.com/.insteadOf" "https://github.com/"
+  when: "'https://github.com/' not in (git_pat_insteadof_rules.stdout_lines | default([]))"
 
 - name: Configure Git to use insteadOf for PAT (SSH)
-  ansible.builtin.git_config:
-    name: "url.https://{{ github_token }}@github.com/.insteadOf"
-    scope: global
-    value: "git@github.com:"
-    state: present
+  ansible.builtin.command:
+    cmd: git config --global --add "url.https://{{ github_token }}@github.com/.insteadOf" "git@github.com:"
+  when: "'git@github.com:' not in (git_pat_insteadof_rules.stdout_lines | default([]))"
 
 # deploy owns deploy_dir, so no root needed here.
 - name: Clone imeco-infra repository
