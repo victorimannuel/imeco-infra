@@ -17,6 +17,8 @@
       - build-essential
       - python3-pip
       - python3-venv
+      - nodejs
+      - npm
     state: present
   become: true
 

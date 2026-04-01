@@ -10,3 +10,15 @@
     state: directory
     mode: '0755'
     recurse: yes
+
+- name: Install dependencies (npm)
+  ansible.builtin.command:
+    cmd: npm install
+    chdir: "{{ deploy_dir }}/apps/globalindo-simetrika"
+  become: false
+
+- name: Build static site
+  ansible.builtin.command:
+    cmd: npm run build
+    chdir: "{{ deploy_dir }}/apps/globalindo-simetrika"
+  become: false
