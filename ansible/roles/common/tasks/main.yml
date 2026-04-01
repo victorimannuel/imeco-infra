@@ -124,10 +124,17 @@
     state: present
   become: true
 
-- name: Set swappiness to 10
-  ansible.builtin.sysctl:
-    name: vm.swappiness
-    value: '10'
-    state: present
-    reload: yes
+- name: Persist swappiness to sysctl config
+  ansible.builtin.lineinfile:
+    path: /etc/sysctl.d/99-imeco.conf
+    regexp: '^vm\.swappiness='
+    line: 'vm.swappiness=10'
+    create: true
+    mode: '0644'
+  register: swappiness_config
+  become: true
+
+- name: Apply swappiness setting
+  ansible.builtin.command: sysctl -p /etc/sysctl.d/99-imeco.conf
+  when: swappiness_config.changed
   become: true

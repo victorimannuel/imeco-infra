@@ -21,6 +21,9 @@ jobs:
       - name: Install Ansible
         run: pip install ansible-core
 
+      - name: Install Ansible collections
+        run: ansible-galaxy collection install -r ansible/collections/requirements.yml
+
       - name: Validate Ansible playbooks (syntax)
         env:
           ANSIBLE_CONFIG: ${{ github.workspace }}/ansible/ansible.cfg
