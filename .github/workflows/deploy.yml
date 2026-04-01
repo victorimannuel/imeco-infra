@@ -1,0 +1,160 @@
+name: Deploy Production
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "ansible/**"
+      - "apps/**"
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: "What to deploy"
+        required: true
+        default: "auto"
+        type: choice
+        options:
+          - auto
+          - infra
+          - globalindo
+          - rms
+          - travel
+          - all
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      infra: ${{ steps.set-outputs.outputs.infra }}
+      globalindo: ${{ steps.set-outputs.outputs.globalindo }}
+      rms: ${{ steps.set-outputs.outputs.rms }}
+      travel: ${{ steps.set-outputs.outputs.travel }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve deploy scope
+        id: set-outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          infra=false
+          globalindo=false
+          rms=false
+          travel=false
+
+          target="${{ github.event.inputs.deploy_target || 'auto' }}"
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "$target" != "auto" ]]; then
+            case "$target" in
+              infra) infra=true ;;
+              globalindo) globalindo=true ;;
+              rms) rms=true ;;
+              travel) travel=true ;;
+              all) infra=true; globalindo=true; rms=true; travel=true ;;
+            esac
+          else
+            before="${{ github.event.before }}"
+            after="${{ github.sha }}"
+
+            if [[ -z "$before" || "$before" == "0000000000000000000000000000000000000000" ]]; then
+              files="$(git ls-files)"
+            else
+              files="$(git diff --name-only "$before" "$after")"
+            fi
+
+            if echo "$files" | rg -q "^ansible/(inventories/|playbooks/setup.yml|roles/(common|security|docker|network|mysql|nginx|phpmyadmin|backup)/)"; then
+              infra=true
+            fi
+            if echo "$files" | rg -q "^(apps/globalindo-simetrika/|ansible/roles/globalindo-simetrika-website/|ansible/playbooks/deploy-apps.yml)"; then
+              globalindo=true
+            fi
+            if echo "$files" | rg -q "^(apps/radar-mandiri-sukses/|ansible/roles/radar-mandiri-sukses-website/|ansible/playbooks/deploy-apps.yml)"; then
+              rms=true
+            fi
+            if echo "$files" | rg -q "^(apps/anugrah-travel-api/|ansible/roles/anugrah-travel-api/|ansible/playbooks/deploy-apps.yml)"; then
+              travel=true
+            fi
+          fi
+
+          echo "infra=$infra" >> "$GITHUB_OUTPUT"
+          echo "globalindo=$globalindo" >> "$GITHUB_OUTPUT"
+          echo "rms=$rms" >> "$GITHUB_OUTPUT"
+          echo "travel=$travel" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    needs: detect-changes
+    if: |
+      needs.detect-changes.outputs.infra == 'true' ||
+      needs.detect-changes.outputs.globalindo == 'true' ||
+      needs.detect-changes.outputs.rms == 'true' ||
+      needs.detect-changes.outputs.travel == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Ansible
+        run: pip install ansible-core
+
+      - name: Load SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Write Ansible Vault password file
+        shell: bash
+        run: |
+          test -n "${{ secrets.ANSIBLE_VAULT_PASSWORD }}"
+          printf '%s' "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > /tmp/.vault_pass
+          chmod 600 /tmp/.vault_pass
+
+      - name: Deploy infra roles
+        if: needs.detect-changes.outputs.infra == 'true'
+        run: |
+          ansible-playbook \
+            -i ansible/inventories/production.yml \
+            ansible/playbooks/setup.yml \
+            --vault-password-file /tmp/.vault_pass \
+            --tags common,security,docker,network,mysql,nginx,phpmyadmin,backup
+
+      - name: Deploy application roles
+        if: |
+          needs.detect-changes.outputs.globalindo == 'true' ||
+          needs.detect-changes.outputs.rms == 'true' ||
+          needs.detect-changes.outputs.travel == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          declare -a tags=("code")
+          [[ "${{ needs.detect-changes.outputs.globalindo }}" == "true" ]] && tags+=("globalindo")
+          [[ "${{ needs.detect-changes.outputs.rms }}" == "true" ]] && tags+=("rms")
+          [[ "${{ needs.detect-changes.outputs.travel }}" == "true" ]] && tags+=("travel")
+
+          tags_csv="$(IFS=,; echo "${tags[*]}")"
+
+          ansible-playbook \
+            -i ansible/inventories/production.yml \
+            ansible/playbooks/deploy-apps.yml \
+            --vault-password-file /tmp/.vault_pass \
+            --tags "$tags_csv"
