@@ -18,6 +18,11 @@ server {
     root /var/www/gs/public/dist;
     index index.html;
 
+    # Disable caching temporarily to reflect updates immediately
+    add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+    add_header Pragma "no-cache" always;
+    add_header Expires "0" always;
+
     # Redirect root to default language subdirectory
     location = / {
         return 301 /en/;
