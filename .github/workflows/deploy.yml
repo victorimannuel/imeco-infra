@@ -121,6 +121,16 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
 
+      - name: Configure SSH host alias
+        run: |
+          mkdir -p ~/.ssh
+          cat <<EOF >> ~/.ssh/config
+          Host imeco-prod
+            HostName ${{ secrets.SSH_HOST }}
+            User deploy
+          EOF
+          chmod 600 ~/.ssh/config
+
       - name: Write Ansible Vault password file
         shell: bash
         run: |
@@ -130,10 +140,11 @@ jobs:
 
       - name: Deploy infra roles
         if: needs.detect-changes.outputs.infra == 'true'
+        working-directory: ansible
         run: |
           ansible-playbook \
-            -i ansible/inventories/production.yml \
-            ansible/playbooks/setup.yml \
+            -i inventories/production.yml \
+            playbooks/setup.yml \
             --vault-password-file /tmp/.vault_pass \
             --tags common,security,docker,network,mysql,nginx,phpmyadmin,backup
 
@@ -143,6 +154,7 @@ jobs:
           needs.detect-changes.outputs.rms == 'true' ||
           needs.detect-changes.outputs.travel == 'true'
         shell: bash
+        working-directory: ansible
         run: |
           set -euo pipefail
 
@@ -154,7 +166,7 @@ jobs:
           tags_csv="$(IFS=,; echo "${tags[*]}")"
 
           ansible-playbook \
-            -i ansible/inventories/production.yml \
-            ansible/playbooks/deploy-apps.yml \
+            -i inventories/production.yml \
+            playbooks/deploy-apps.yml \
             --vault-password-file /tmp/.vault_pass \
             --tags "$tags_csv"
