@@ -141,6 +141,8 @@ jobs:
       - name: Deploy infra roles
         if: needs.detect-changes.outputs.infra == 'true'
         working-directory: ansible
+        env:
+          ANSIBLE_CONFIG: ansible.cfg
         run: |
           ansible-playbook \
             -i inventories/production.yml \
@@ -155,6 +157,8 @@ jobs:
           needs.detect-changes.outputs.travel == 'true'
         shell: bash
         working-directory: ansible
+        env:
+          ANSIBLE_CONFIG: ansible.cfg
         run: |
           set -euo pipefail
 
