@@ -9,13 +9,13 @@
   roles:
     - role: common
       tags: ['common', 'basic']
-      
+
     - role: security
       tags: ['security', 'ufw', 'fail2ban']
 
     - role: docker
       tags: ['docker', 'engine']
-      
+
     - role: network
       tags: ['docker', 'network']
 

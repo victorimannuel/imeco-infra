@@ -5,12 +5,12 @@
   vars_files:
     - ../inventories/group_vars/all/vars.yml
     - ../inventories/group_vars/all/vault.yml
-    
-  # We assume infra is running, so we only run the common role to get git pull and app roles
+
+  # We assume infra is running, so we only run common for git pull, then app roles.
   roles:
     - role: common
       tags: ['code']
-      
+
     - role: radar-mandiri-sukses-website
       tags: ['rms']
 

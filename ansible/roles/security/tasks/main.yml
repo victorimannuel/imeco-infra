@@ -48,7 +48,9 @@
     line: "{{ item.key }} {{ item.value }}"
     state: present
   loop:
-    - { key: 'PermitRootLogin',        value: 'no' }   # create-user.yml already sets this; enforce here too
-    - { key: 'PasswordAuthentication', value: 'no' }
+    - key: 'PermitRootLogin' # create-user.yml already sets this; enforce here too
+      value: 'no'
+    - key: 'PasswordAuthentication'
+      value: 'no'
   notify: Restart SSH
   become: true
