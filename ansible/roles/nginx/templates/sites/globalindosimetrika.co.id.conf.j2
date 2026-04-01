@@ -15,7 +15,7 @@ server {
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
 
-    root {{ deploy_dir }}/apps/globalindo-simetrika/dist;
+    root /var/www/gs/public/dist;
     index index.html;
 
     # Redirect root to default language subdirectory

@@ -7,6 +7,18 @@
     cache_valid_time: 3600
   become: true
 
+- name: Add NodeSource GPG key
+  ansible.builtin.apt_key:
+    url: https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
+    state: present
+  become: true
+
+- name: Add NodeSource repository
+  ansible.builtin.apt_repository:
+    repo: "deb https://deb.nodesource.com/node_20.x nodistro main"
+    state: present
+  become: true
+
 - name: Install base dependencies
   ansible.builtin.apt:
     name:
@@ -18,8 +30,8 @@
       - python3-pip
       - python3-venv
       - nodejs
-      - npm
-    state: present
+    state: latest
+    update_cache: yes
   become: true
 
 # Root is needed to create /opt/..., but we immediately hand ownership to
