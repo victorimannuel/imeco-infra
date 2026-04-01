@@ -82,16 +82,16 @@ jobs:
               files="$(git diff --name-only "$before" "$after")"
             fi
 
-            if echo "$files" | rg -q "^ansible/(inventories/|playbooks/setup.yml|roles/(common|security|docker|network|mysql|nginx|phpmyadmin|backup)/)"; then
+            if echo "$files" | grep -Eq "^ansible/(inventories/|playbooks/setup.yml|roles/(common|security|docker|network|mysql|nginx|phpmyadmin|backup)/)"; then
               infra=true
             fi
-            if echo "$files" | rg -q "^(apps/globalindo-simetrika(/|$)|ansible/roles/globalindo-simetrika-website/|ansible/playbooks/deploy-apps.yml)"; then
+            if echo "$files" | grep -Eq "^(apps/globalindo-simetrika(/|$)|ansible/roles/globalindo-simetrika-website/|ansible/playbooks/deploy-apps.yml)"; then
               globalindo=true
             fi
-            if echo "$files" | rg -q "^(apps/radar-mandiri-sukses(/|$)|ansible/roles/radar-mandiri-sukses-website/|ansible/playbooks/deploy-apps.yml)"; then
+            if echo "$files" | grep -Eq "^(apps/radar-mandiri-sukses(/|$)|ansible/roles/radar-mandiri-sukses-website/|ansible/playbooks/deploy-apps.yml)"; then
               rms=true
             fi
-            if echo "$files" | rg -q "^(apps/anugrah-travel-api(/|$)|ansible/roles/anugrah-travel-api/|ansible/playbooks/deploy-apps.yml)"; then
+            if echo "$files" | grep -Eq "^(apps/anugrah-travel-api(/|$)|ansible/roles/anugrah-travel-api/|ansible/playbooks/deploy-apps.yml)"; then
               travel=true
             fi
           fi
