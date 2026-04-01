@@ -12,9 +12,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -51,9 +48,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Load SSH key for submodules
+        uses: webfactory/ssh-agent@v0.9.0
         with:
-          submodules: recursive
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Fetch submodule
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive apps/globalindo-simetrika
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -73,9 +77,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Load SSH key for submodules
+        uses: webfactory/ssh-agent@v0.9.0
         with:
-          submodules: recursive
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Fetch submodule
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive apps/anugrah-travel-api
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -91,9 +102,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Load SSH key for submodules
+        uses: webfactory/ssh-agent@v0.9.0
         with:
-          submodules: recursive
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Fetch submodule
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive apps/radar-mandiri-sukses
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
