@@ -1,12 +1,13 @@
 name: Deploy Production
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
     branches:
       - main
-    paths:
-      - "ansible/**"
-      - "apps/**"
   workflow_dispatch:
     inputs:
       deploy_target:
@@ -39,6 +40,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.ref_name }}
 
       - name: Resolve deploy scope
         id: set-outputs
@@ -62,8 +64,17 @@ jobs:
               all) infra=true; globalindo=true; rms=true; travel=true ;;
             esac
           else
-            before="${{ github.event.before }}"
-            after="${{ github.sha }}"
+            if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+              after="${{ github.event.workflow_run.head_sha }}"
+              if git rev-parse "${after}^" >/dev/null 2>&1; then
+                before="$(git rev-parse "${after}^")"
+              else
+                before=""
+              fi
+            else
+              before="${{ github.event.before }}"
+              after="${{ github.sha }}"
+            fi
 
             if [[ -z "$before" || "$before" == "0000000000000000000000000000000000000000" ]]; then
               files="$(git ls-files)"
@@ -95,13 +106,17 @@ jobs:
     environment: production
     needs: detect-changes
     if: |
-      needs.detect-changes.outputs.infra == 'true' ||
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')) &&
+      (needs.detect-changes.outputs.infra == 'true' ||
       needs.detect-changes.outputs.globalindo == 'true' ||
       needs.detect-changes.outputs.rms == 'true' ||
-      needs.detect-changes.outputs.travel == 'true'
+      needs.detect-changes.outputs.travel == 'true')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
