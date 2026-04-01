@@ -12,6 +12,7 @@ services:
     volumes:
       - .env:/var/www/rms/.env:ro
       - ./writable:/var/www/rms/writable:rw
+      - ./public/uploads:/var/www/rms/public/uploads:rw
     restart: always
     networks:
       - appnet
