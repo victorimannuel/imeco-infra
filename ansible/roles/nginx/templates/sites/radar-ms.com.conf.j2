@@ -1,12 +1,12 @@
 server {
     listen 80;
-    server_name radar-ms.com www.radar-ms.com;
+    server_name radar-ms.com www.radar-ms.com admin.radar-ms.com;
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl;
-    server_name radar-ms.com www.radar-ms.com;
+    server_name radar-ms.com www.radar-ms.com admin.radar-ms.com;
 
     ssl_certificate     /etc/nginx/ssl/origin.crt;
     ssl_certificate_key /etc/nginx/ssl/origin.key;
