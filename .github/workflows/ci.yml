@@ -49,14 +49,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Load SSH key for submodules
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Configure HTTPS auth for submodules
+        env:
+          SUBMODULES_PAT: ${{ secrets.SUBMODULES_PAT }}
+        run: |
+          test -n "${SUBMODULES_PAT}"
+          git config --global url."https://x-access-token:${SUBMODULES_PAT}@github.com/".insteadOf "git@github.com:"
+          git submodule sync --recursive
 
       - name: Fetch submodule
         run: |
-          git submodule sync --recursive
           git submodule update --init --recursive apps/globalindo-simetrika
 
       - name: Set up Node.js
@@ -78,14 +80,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Load SSH key for submodules
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Configure HTTPS auth for submodules
+        env:
+          SUBMODULES_PAT: ${{ secrets.SUBMODULES_PAT }}
+        run: |
+          test -n "${SUBMODULES_PAT}"
+          git config --global url."https://x-access-token:${SUBMODULES_PAT}@github.com/".insteadOf "git@github.com:"
+          git submodule sync --recursive
 
       - name: Fetch submodule
         run: |
-          git submodule sync --recursive
           git submodule update --init --recursive apps/anugrah-travel-api
 
       - name: Set up Go
@@ -103,14 +107,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Load SSH key for submodules
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Configure HTTPS auth for submodules
+        env:
+          SUBMODULES_PAT: ${{ secrets.SUBMODULES_PAT }}
+        run: |
+          test -n "${SUBMODULES_PAT}"
+          git config --global url."https://x-access-token:${SUBMODULES_PAT}@github.com/".insteadOf "git@github.com:"
+          git submodule sync --recursive
 
       - name: Fetch submodule
         run: |
-          git submodule sync --recursive
           git submodule update --init --recursive apps/radar-mandiri-sukses
 
       - name: Set up PHP
