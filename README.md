@@ -120,3 +120,4 @@ Once the server is running, use these shortcuts from the `ansible/` folder for r
 The deployment uses `git clone` on the target server to pull your source code. 
 
 If any of your repositories or submodules are **private**, the deployment will generate an SSH key at `/home/<USER>/.ssh/id_ed25519.pub`. Add this key to your GitHub **Deploy Keys** for the specific repository to grant the server read access.
+
