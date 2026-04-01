@@ -142,8 +142,8 @@ jobs:
         if: needs.detect-changes.outputs.infra == 'true'
         working-directory: ansible
         env:
-          ANSIBLE_CONFIG: ansible.cfg
-          ANSIBLE_ROLES_PATH: roles
+          ANSIBLE_CONFIG: ${{ github.workspace }}/ansible/ansible.cfg
+          ANSIBLE_ROLES_PATH: ${{ github.workspace }}/ansible/roles
         run: |
           ansible-playbook \
             -i inventories/production.yml \
@@ -159,8 +159,8 @@ jobs:
         shell: bash
         working-directory: ansible
         env:
-          ANSIBLE_CONFIG: ansible.cfg
-          ANSIBLE_ROLES_PATH: roles
+          ANSIBLE_CONFIG: ${{ github.workspace }}/ansible/ansible.cfg
+          ANSIBLE_ROLES_PATH: ${{ github.workspace }}/ansible/roles
         run: |
           set -euo pipefail
 

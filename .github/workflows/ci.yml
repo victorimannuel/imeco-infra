@@ -24,8 +24,8 @@ jobs:
       - name: Validate Ansible playbooks (syntax)
         working-directory: ansible
         env:
-          ANSIBLE_CONFIG: ansible.cfg
-          ANSIBLE_ROLES_PATH: roles
+          ANSIBLE_CONFIG: ${{ github.workspace }}/ansible/ansible.cfg
+          ANSIBLE_ROLES_PATH: ${{ github.workspace }}/ansible/roles
           ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
         run: |
           if [ -n "${ANSIBLE_VAULT_PASSWORD}" ]; then
