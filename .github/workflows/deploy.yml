@@ -140,14 +140,13 @@ jobs:
 
       - name: Deploy infra roles
         if: needs.detect-changes.outputs.infra == 'true'
-        working-directory: ansible
         env:
           ANSIBLE_CONFIG: ${{ github.workspace }}/ansible/ansible.cfg
           ANSIBLE_ROLES_PATH: ${{ github.workspace }}/ansible/roles
         run: |
           ansible-playbook \
-            -i inventories/production.yml \
-            playbooks/setup.yml \
+            -i ansible/inventories/production.yml \
+            ansible/playbooks/setup.yml \
             --vault-password-file /tmp/.vault_pass \
             --tags common,security,docker,network,mysql,nginx,phpmyadmin,backup
 
@@ -157,7 +156,6 @@ jobs:
           needs.detect-changes.outputs.rms == 'true' ||
           needs.detect-changes.outputs.travel == 'true'
         shell: bash
-        working-directory: ansible
         env:
           ANSIBLE_CONFIG: ${{ github.workspace }}/ansible/ansible.cfg
           ANSIBLE_ROLES_PATH: ${{ github.workspace }}/ansible/roles
@@ -172,7 +170,7 @@ jobs:
           tags_csv="$(IFS=,; echo "${tags[*]}")"
 
           ansible-playbook \
-            -i inventories/production.yml \
-            playbooks/deploy-apps.yml \
+            -i ansible/inventories/production.yml \
+            ansible/playbooks/deploy-apps.yml \
             --vault-password-file /tmp/.vault_pass \
             --tags "$tags_csv"
