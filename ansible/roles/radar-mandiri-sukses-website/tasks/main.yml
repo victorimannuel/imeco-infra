@@ -39,3 +39,13 @@
       - docker-compose.prod.yml
     state: present
     build: always
+
+- name: Ensure Composer dependencies are present in RMS container
+  ansible.builtin.command:
+    cmd: docker exec php-ci4-rms composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+  register: rms_composer_install
+  changed_when: "'Nothing to install, update or remove' not in rms_composer_install.stdout"
+
+- name: Verify CodeIgniter framework boot file exists
+  ansible.builtin.command:
+    cmd: docker exec php-ci4-rms test -f /var/www/rms/vendor/codeigniter4/framework/system/Boot.php
