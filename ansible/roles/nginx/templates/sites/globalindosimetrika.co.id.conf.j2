@@ -28,8 +28,21 @@ server {
         return 301 /en/;
     }
 
+    location = /robots.txt {
+        default_type text/plain;
+        return 200 "User-agent: *\nAllow: /\n\nSitemap: https://globalindosimetrika.co.id/sitemap.xml\n";
+    }
+
+    location = /sitemap.xml {
+        try_files $uri =404;
+    }
+
+    location ~ ^/(en|id)(/|$) {
+        try_files $uri $uri/index.html =404;
+    }
+
     location / {
-        try_files $uri $uri/ @lang_redirect;
+        try_files $uri $uri/index.html @lang_redirect;
     }
 
     # Canonicalize non-language URLs to /en/*.
