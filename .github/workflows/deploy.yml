@@ -156,6 +156,46 @@ jobs:
           printf '%s' "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > ansible/.vault_pass
           chmod 600 ansible/.vault_pass
 
+      - name: Materialize SSL files for Ansible controller
+        shell: bash
+        env:
+          GLOBALINDO_ORIGIN_CRT: ${{ secrets.GLOBALINDO_ORIGIN_CRT }}
+          GLOBALINDO_ORIGIN_KEY: ${{ secrets.GLOBALINDO_ORIGIN_KEY }}
+          API_ANUGRAHTRAVEL_ORIGIN_CRT: ${{ secrets.API_ANUGRAHTRAVEL_ORIGIN_CRT }}
+          API_ANUGRAHTRAVEL_ORIGIN_KEY: ${{ secrets.API_ANUGRAHTRAVEL_ORIGIN_KEY }}
+          RADAR_MS_ORIGIN_CRT: ${{ secrets.RADAR_MS_ORIGIN_CRT }}
+          RADAR_MS_ORIGIN_KEY: ${{ secrets.RADAR_MS_ORIGIN_KEY }}
+        run: |
+          set -euo pipefail
+
+          for var in \
+            GLOBALINDO_ORIGIN_CRT \
+            GLOBALINDO_ORIGIN_KEY \
+            API_ANUGRAHTRAVEL_ORIGIN_CRT \
+            API_ANUGRAHTRAVEL_ORIGIN_KEY \
+            RADAR_MS_ORIGIN_CRT \
+            RADAR_MS_ORIGIN_KEY; do
+            if [ -z "${!var:-}" ]; then
+              echo "Missing required secret: $var" >&2
+              exit 1
+            fi
+          done
+
+          mkdir -p "${GITHUB_WORKSPACE}/ssl/globalindosimetrika.co.id"
+          mkdir -p "${GITHUB_WORKSPACE}/ssl/api.anugrahtravel.com"
+          mkdir -p "${GITHUB_WORKSPACE}/ssl/radar-ms.com"
+
+          printf '%s' "${GLOBALINDO_ORIGIN_CRT}" > "${GITHUB_WORKSPACE}/ssl/globalindosimetrika.co.id/origin.crt"
+          printf '%s' "${GLOBALINDO_ORIGIN_KEY}" > "${GITHUB_WORKSPACE}/ssl/globalindosimetrika.co.id/origin.key"
+          printf '%s' "${API_ANUGRAHTRAVEL_ORIGIN_CRT}" > "${GITHUB_WORKSPACE}/ssl/api.anugrahtravel.com/origin.crt"
+          printf '%s' "${API_ANUGRAHTRAVEL_ORIGIN_KEY}" > "${GITHUB_WORKSPACE}/ssl/api.anugrahtravel.com/origin.key"
+          printf '%s' "${RADAR_MS_ORIGIN_CRT}" > "${GITHUB_WORKSPACE}/ssl/radar-ms.com/origin.crt"
+          printf '%s' "${RADAR_MS_ORIGIN_KEY}" > "${GITHUB_WORKSPACE}/ssl/radar-ms.com/origin.key"
+
+          chmod 700 "${GITHUB_WORKSPACE}/ssl" "${GITHUB_WORKSPACE}/ssl/"*
+          chmod 644 "${GITHUB_WORKSPACE}/ssl/"*/origin.crt
+          chmod 600 "${GITHUB_WORKSPACE}/ssl/"*/origin.key
+
       - name: Deploy infra roles
         if: needs.detect-changes.outputs.infra == 'true'
         env:
@@ -166,6 +206,7 @@ jobs:
             -i ansible/inventories/production.yml \
             ansible/playbooks/setup.yml \
             --vault-password-file ansible/.vault_pass \
+            -e "local_ssl_path=${GITHUB_WORKSPACE}/ssl" \
             --tags common,security,docker,network,mysql,nginx,phpmyadmin,backup
 
       - name: Deploy application roles
@@ -191,4 +232,5 @@ jobs:
             -i ansible/inventories/production.yml \
             ansible/playbooks/deploy-apps.yml \
             --vault-password-file ansible/.vault_pass \
+            -e "local_ssl_path=${GITHUB_WORKSPACE}/ssl" \
             --tags "$tags_csv"
