@@ -160,3 +160,6 @@ services/nginx/ssl/*/*
 *rclone.conf
 *googleusercontent.com.json
 
+# Codex local state
+.codex
+.codex/
