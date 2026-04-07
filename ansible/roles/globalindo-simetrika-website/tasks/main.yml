@@ -1,8 +1,14 @@
 ---
 # ansible/roles/globalindo-simetrika-website/tasks/main.yml
-# This app is just static HTML served directly by Nginx.
-# A git pull is sufficient (which was done in the common role).
-# We just ensure the files are readable by Nginx.
+# This app is static HTML served directly by Nginx.
+
+- name: Sync Globalindo website source code
+  ansible.builtin.git:
+    repo: 'https://github.com/victorimannuel/globalindo-simetrika-website.git'
+    dest: "{{ deploy_dir }}/apps/globalindo-simetrika"
+    version: main
+    recursive: yes
+    force: yes
 
 - name: Ensure correct permissions for static files
   ansible.builtin.file:

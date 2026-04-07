@@ -1,5 +1,13 @@
 ---
 # ansible/roles/app-travel-api/tasks/main.yml
+- name: Sync Anugrah Travel API source code
+  ansible.builtin.git:
+    repo: 'https://github.com/victorimannuel/anugrah-travel-api.git'
+    dest: "{{ deploy_dir }}/apps/anugrah-travel-api"
+    version: main
+    recursive: yes
+    force: yes
+
 - name: Template docker-compose.yml
   ansible.builtin.template:
     src: docker-compose.yml.j2

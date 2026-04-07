@@ -6,11 +6,9 @@
     - ../inventories/group_vars/all/vars.yml
     - ../inventories/group_vars/all/vault.yml
 
-  # We assume infra is running, so we only run common for git pull, then app roles.
+  # Infra services are assumed to be already provisioned.
+  # Each app role is responsible for syncing only its own source code.
   roles:
-    - role: common
-      tags: ['code']
-
     - role: radar-mandiri-sukses-website
       tags: ['rms']
 

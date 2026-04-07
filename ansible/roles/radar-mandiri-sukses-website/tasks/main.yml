@@ -1,5 +1,13 @@
 ---
 # ansible/roles/app-rms/tasks/main.yml
+- name: Sync RMS source code
+  ansible.builtin.git:
+    repo: 'https://github.com/victorimannuel/radar-mandiri-sukses.git'
+    dest: "{{ deploy_dir }}/apps/radar-mandiri-sukses"
+    version: main
+    recursive: yes
+    force: yes
+
 - name: Template docker-compose.yml
   ansible.builtin.template:
     src: docker-compose.yml.j2
