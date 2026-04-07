@@ -1,5 +1,15 @@
 ---
 # ansible/roles/app-rms/tasks/main.yml
+- name: Preflight ownership repair for git-managed writable files
+  ansible.builtin.file:
+    path: "{{ deploy_dir }}/apps/radar-mandiri-sukses/writable"
+    state: directory
+    owner: "deploy"
+    group: "deploy"
+    mode: '0775'
+    recurse: yes
+  become: true
+
 - name: Sync RMS source code
   ansible.builtin.git:
     repo: 'https://github.com/victorimannuel/radar-mandiri-sukses.git'
