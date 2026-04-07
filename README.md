@@ -13,7 +13,7 @@ This repository contains the Ansible playbooks and Docker configuration required
     *   `group_vars/all/vault.yml`: **Encrypted** file containing sensitive secrets (passwords, SSL certs, tokens).
 *   `ansible/playbooks/`: Playbooks to execute different deployment scenarios.
     *   `setup.yml`: Full infrastructure setup (Docker, Network, DB, Nginx, Apps).
-    *   `deploy-apps.yml`: Quick redeployment for just the applications (no core infra changes).
+    *   `deploy-apps.yml`: Quick redeployment for applications only (app-scoped sync, no shared full-tree sync).
 *   `ansible/roles/`: Modular tasks for each component (common, security, docker, mysql, nginx, backup, and individual apps).
 
 ---
@@ -100,9 +100,21 @@ Once the migration is complete, close the phpMyAdmin port for security.
 
 Once the server is running, use these shortcuts from the `ansible/` folder for routine updates:
 
-*   **Update Code Only (Fast):**
+*   **Update all listed app roles in `deploy-apps.yml`:**
     ```bash
     ansible-playbook -i inventories/production.yml playbooks/deploy-apps.yml
+    ```
+*   **Update RMS only:**
+    ```bash
+    ansible-playbook -i inventories/production.yml playbooks/deploy-apps.yml --tags rms
+    ```
+*   **Update Globalindo website only:**
+    ```bash
+    ansible-playbook -i inventories/production.yml playbooks/deploy-apps.yml --tags globalindo
+    ```
+*   **Update Travel API only:**
+    ```bash
+    ansible-playbook -i inventories/production.yml playbooks/deploy-apps.yml --tags travel
     ```
 *   **Update Nginx Configs:**
     ```bash
@@ -112,6 +124,8 @@ Once the server is running, use these shortcuts from the `ansible/` folder for r
     ```bash
     ansible-playbook -i inventories/production.yml playbooks/setup.yml --tags "mysql,pma"
     ```
+
+For a concise command-only runbook, see [DEPLOY_STEPS.md](DEPLOY_STEPS.md).
 
 ---
 
