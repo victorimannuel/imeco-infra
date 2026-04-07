@@ -20,24 +20,24 @@
     dest: "{{ deploy_dir }}/apps/radar-mandiri-sukses/.env"
     mode: '0644'
 
-- name: "Fix permissions for writable and uploads folders (Audit-safe: host must allow container UID to write)"
+- name: "Fix writable folder permissions (keep git-managed files owned by deploy)"
   ansible.builtin.file:
-    path: "{{ deploy_dir }}/apps/radar-mandiri-sukses/{{ item }}"
+    path: "{{ deploy_dir }}/apps/radar-mandiri-sukses/writable"
     state: directory
-    owner: "33"  # UID for www-data in the container
+    owner: "deploy"
     group: "33"  # GID for www-data in the container
     mode: '0775'
     recurse: yes
-  loop:
-    - writable
-    - public/uploads
   become: true # Only task in RMS needing root, because chown to 33 requires root
 
-- name: Set upload directory permissions
+- name: "Fix uploads folder permissions (deploy-owned, writable by container group)"
   ansible.builtin.file:
     path: "{{ deploy_dir }}/apps/radar-mandiri-sukses/public/uploads"
     state: directory
-    mode: '0777'
+    owner: "deploy"
+    group: "33"  # GID for www-data in the container
+    mode: '0775'
+    recurse: yes
   become: true
 
 - name: Build and Start RMS application
