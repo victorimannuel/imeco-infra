@@ -7,3 +7,7 @@
 [submodule "apps/globalindo-simetrika"]
 	path = apps/globalindo-simetrika
 	url = git@github.com:victorimannuel/globalindo-simetrika-website.git
+[submodule "apps/jtb-odoo"]
+	path = apps/jtb-odoo
+	url = git@github.com:victorimannuel/jtb-odoo.git
+	branch = main
